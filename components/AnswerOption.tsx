@@ -1,18 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Answer } from '../types';
 
 type Props = {
   answer: Answer;
   selection?: string;
-  percentage?: number;
+  totalVotes: number;
   isWinner?: boolean;
   onClick: (answer: string) => void;
 };
 
 type StyledProps = {
+  isPollClosed: boolean;
+  votePercentage: number;
   isWinner: boolean;
 };
+
+const getCalculatedPercentage = (totalVotes: number, votes: number) =>
+  Number(((votes * 100) / totalVotes).toFixed(0));
 
 const StyledAnswer = styled.button<StyledProps>`
   position: relative;
@@ -42,10 +47,12 @@ const StyledAnswer = styled.button<StyledProps>`
     position: absolute;
     top: 0;
     left: 0;
-    inline-size: 0;
+    inline-size: ${(props) =>
+      props.isPollClosed ? `${props.votePercentage}%` : 0};
     block-size: 100%;
     background-color: ${(props) =>
       props.isWinner ? 'rgb(164, 255, 244)' : 'rgb(232, 232, 232)'};
+    transition: inline-size 0.6s;
     z-index: 0;
   }
 
@@ -66,20 +73,28 @@ const StyledAnswer = styled.button<StyledProps>`
 `;
 
 const AnswerOption = ({
-  answer: { text },
+  answer: { text, votes: initialVotes },
   selection,
+  totalVotes,
   isWinner,
   onClick,
 }: Props) => {
+  const [votes, setVotes] = useState<number>(initialVotes);
+
   const handleClick = () => {
     if (selection) return; // Lock selection if we already voted
     onClick(text);
+    setVotes(votes + 1);
   };
+
+  const votePercentage = getCalculatedPercentage(totalVotes, votes);
 
   return (
     <StyledAnswer
       type="button"
+      isPollClosed={Boolean(selection)}
       isWinner={isWinner || false}
+      votePercentage={votePercentage}
       onClick={handleClick}
       aria-label={`Select ${text.slice(2)}`}
     >
@@ -91,7 +106,9 @@ const AnswerOption = ({
         ) : null}
       </span>
 
-      <span className="answer__percentage">25%</span>
+      {selection ? (
+        <span className="answer__percentage">{votePercentage}%</span>
+      ) : null}
     </StyledAnswer>
   );
 };

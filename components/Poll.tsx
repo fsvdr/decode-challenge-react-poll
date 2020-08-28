@@ -56,8 +56,9 @@ export default function Poll({ qandas }: Props) {
       <div className="poll__options">
         {question.answers.map((answer) => (
           <AnswerOption
-            selection={selection}
             answer={answer}
+            selection={selection}
+            totalVotes={votes}
             onClick={selectAnswer}
             key={answer.text}
           />
