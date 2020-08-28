@@ -56,8 +56,17 @@ const getMostPopularAnswer = (answers: Answer[]): Answer =>
     { text: '', votes: 0 }
   );
 
+/**
+ * Get a random question within the provided set
+ * @param questions
+ */
+const getRandomQuestion = (questions: QandA[]) => {
+  const randomIndex = Math.floor(Math.random() * questions.length);
+  return questions[randomIndex];
+};
+
 export default function Poll({ qandas }: Props) {
-  const question: QandA = qandas.questions[0];
+  const [question] = useState<QandA>(() => getRandomQuestion(qandas.questions));
   const [selection, setSelection] = useState<string>();
   const [votes, setVotes] = useState<number>(() =>
     getTotalVotes(question.answers)
