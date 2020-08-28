@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { QandAsDocument, QandA } from '../types';
+import { QandAsDocument, QandA, Answer } from '../types';
 import AnswerOption from './AnswerOption';
 
 type Props = {
@@ -37,16 +37,40 @@ const PollWrapper = styled.form`
   }
 `;
 
+/**
+ * Calculates the total amount of votes within the provided answers
+ * @param answers
+ */
+const getTotalVotes = (answers: Answer[]): number =>
+  answers.reduce((acc, answer) => acc + answer.votes, 0);
+
+/**
+ * Identifies the answer with most votes within the provided set
+ * @param answers
+ */
+const getMostPopularAnswer = (answers: Answer[]): Answer =>
+  answers.reduce(
+    (acc: Answer, answer) => {
+      return answer.votes > acc.votes ? answer : acc;
+    },
+    { text: '', votes: 0 }
+  );
+
 export default function Poll({ qandas }: Props) {
   const question: QandA = qandas.questions[0];
   const [selection, setSelection] = useState<string>();
-  const [votes, setVotes] = useState<number>(() => {
-    return question.answers.reduce((acc, answer) => acc + answer.votes, 0);
-  });
+  const [votes, setVotes] = useState<number>(() =>
+    getTotalVotes(question.answers)
+  );
+  const [winner, setWinner] = useState<Answer>(() =>
+    getMostPopularAnswer(question.answers)
+  );
 
-  const selectAnswer = (answer: string) => {
-    setSelection(answer);
+  const selectAnswer = (answer: Answer) => {
+    setSelection(answer.text);
     setVotes(votes + 1);
+
+    if (answer.votes + 1 > winner.votes) setWinner(answer);
   };
 
   return (
@@ -59,6 +83,7 @@ export default function Poll({ qandas }: Props) {
             answer={answer}
             selection={selection}
             totalVotes={votes}
+            winner={winner}
             onClick={selectAnswer}
             key={answer.text}
           />

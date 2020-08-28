@@ -6,8 +6,8 @@ type Props = {
   answer: Answer;
   selection?: string;
   totalVotes: number;
-  isWinner?: boolean;
-  onClick: (answer: string) => void;
+  winner: Answer;
+  onClick: (answer: Answer) => void;
 };
 
 type StyledProps = {
@@ -15,9 +15,6 @@ type StyledProps = {
   votePercentage: number;
   isWinner: boolean;
 };
-
-const getCalculatedPercentage = (totalVotes: number, votes: number) =>
-  Number(((votes * 100) / totalVotes).toFixed(0));
 
 const StyledAnswer = styled.button<StyledProps>`
   position: relative;
@@ -27,7 +24,8 @@ const StyledAnswer = styled.button<StyledProps>`
   align-items: center;
   inline-size: 100%;
   font-size: 0.9rem;
-  font-weight: ${(props) => (props.isWinner ? 'bold' : 'normal')};
+  font-weight: ${(props) =>
+    props.isPollClosed && props.isWinner ? 'bold' : 'normal'};
   padding: 0.6rem 0.6rem;
   border: 1.4px solid rgb(225, 225, 225);
   border-radius: 6px;
@@ -35,11 +33,12 @@ const StyledAnswer = styled.button<StyledProps>`
   outline: none;
   transition: border-color 0.3s;
   overflow: hidden;
-  cursor: pointer;
+  cursor: ${(props) => (props.isPollClosed ? 'not-allowed' : 'pointer')};
 
   &:hover,
   &:focus {
-    border-color: #000000;
+    border-color: ${(props) =>
+      props.isPollClosed ? 'rgb(225, 225, 225)' : '#000000'};
   }
 
   & ::before {
@@ -72,18 +71,25 @@ const StyledAnswer = styled.button<StyledProps>`
   }
 `;
 
+/**
+ * Calculates the percentage that represents the provided votes
+ * within the total votes provided
+ */
+const getCalculatedPercentage = (totalVotes: number, votes: number) =>
+  Number(((votes * 100) / totalVotes).toFixed(0));
+
 const AnswerOption = ({
-  answer: { text, votes: initialVotes },
+  answer,
   selection,
   totalVotes,
-  isWinner,
+  winner,
   onClick,
 }: Props) => {
-  const [votes, setVotes] = useState<number>(initialVotes);
+  const [votes, setVotes] = useState<number>(answer.votes);
 
   const handleClick = () => {
     if (selection) return; // Lock selection if we already voted
-    onClick(text);
+    onClick(answer);
     setVotes(votes + 1);
   };
 
@@ -93,15 +99,15 @@ const AnswerOption = ({
     <StyledAnswer
       type="button"
       isPollClosed={Boolean(selection)}
-      isWinner={isWinner || false}
+      isWinner={winner.text === answer.text}
       votePercentage={votePercentage}
       onClick={handleClick}
-      aria-label={`Select ${text.slice(2)}`}
+      aria-label={`Select ${answer.text.slice(2)}`}
     >
       <span className="answer__content">
-        {text}
+        {answer.text}
 
-        {selection && selection === text ? (
+        {selection && selection === answer.text ? (
           <img src={require('../static/check-circle.svg')} alt="" />
         ) : null}
       </span>
