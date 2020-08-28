@@ -21,12 +21,3 @@ export default () => (
     </p>
   </IndexPage>
 );
-
-/**
- * TIPS:
- *
- * You can load the check image like this:
- *
- *    <img src={require('../static/check-circle.svg')} />
- *
- */
