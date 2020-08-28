@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { QandAsDocument, QandA } from '../types';
 import AnswerOption from './AnswerOption';
@@ -39,10 +39,15 @@ const PollWrapper = styled.form`
 
 export default function Poll({ qandas }: Props) {
   const question: QandA = qandas.questions[0];
-  const totalVotes: number = question.answers.reduce(
-    (acc, answer) => acc + answer.votes,
-    0
-  );
+  const [selection, setSelection] = useState<string>();
+  const [votes, setVotes] = useState<number>(() => {
+    return question.answers.reduce((acc, answer) => acc + answer.votes, 0);
+  });
+
+  const selectAnswer = (answer: string) => {
+    setSelection(answer);
+    setVotes(votes + 1);
+  };
 
   return (
     <PollWrapper>
@@ -50,11 +55,16 @@ export default function Poll({ qandas }: Props) {
 
       <div className="poll__options">
         {question.answers.map((answer) => (
-          <AnswerOption answer={answer} />
+          <AnswerOption
+            selection={selection}
+            answer={answer}
+            onClick={selectAnswer}
+            key={answer.text}
+          />
         ))}
       </div>
 
-      <p className="poll__votes">{totalVotes} votes</p>
+      <p className="poll__votes">{votes} votes</p>
     </PollWrapper>
   );
 }
