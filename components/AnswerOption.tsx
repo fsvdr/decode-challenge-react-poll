@@ -78,6 +78,25 @@ const StyledAnswer = styled.button<StyledProps>`
 const getCalculatedPercentage = (totalVotes: number, votes: number) =>
   Number(((votes * 100) / totalVotes).toFixed(0));
 
+/**
+ * Generates an accessible label for the poll option considering two states:
+ *  1. User hasn't voted: Button is described by the text content
+ *  2. User has voted: Buttons are described by the poll results
+ * @param selection
+ * @param text
+ * @param votes
+ * @param percentage
+ */
+const getResultLabel = (
+  selection: string = '',
+  text: string,
+  votes: number,
+  percentage: number
+) => {
+  if (!selection) return `Select ${text}`;
+
+  return `${text} has been voted by ${percentage} percent of ${votes} total votes.`;
+};
 const AnswerOption = ({
   answer,
   selection,
@@ -102,7 +121,12 @@ const AnswerOption = ({
       isWinner={winner.text === answer.text}
       votePercentage={votePercentage}
       onClick={handleClick}
-      aria-label={`Select ${answer.text.slice(2)}`}
+      aria-label={getResultLabel(
+        selection,
+        answer.text.slice(2),
+        totalVotes,
+        votePercentage
+      )}
     >
       <span className="answer__content">
         {answer.text}

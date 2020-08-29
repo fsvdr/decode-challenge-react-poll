@@ -74,12 +74,23 @@ export default function Poll({ qandas }: Props) {
   const [winner, setWinner] = useState<Answer>(() =>
     getMostPopularAnswer(question.answers)
   );
+  const [winnerStatus, setWinnerStatus] = useState<string>('');
 
   const selectAnswer = (answer: Answer) => {
-    setSelection(answer.text);
-    setVotes(votes + 1);
+    const updatedVotes = votes + 1;
+    const selectedWinner = answer.votes + 1 > winner.votes;
 
-    if (answer.votes + 1 > winner.votes) setWinner(answer);
+    setSelection(answer.text);
+    setVotes(updatedVotes);
+    setWinnerStatus(
+      selectedWinner
+        ? 'Your answer is ahead on the poll!'
+        : `${winner.text} is winning the poll with ${winner.votes} votes`
+    );
+
+    if (!selectedWinner) return;
+
+    setWinner(answer);
   };
 
   return (
@@ -99,7 +110,12 @@ export default function Poll({ qandas }: Props) {
         ))}
       </div>
 
-      <p className="poll__votes">{votes} votes</p>
+      <p
+        className="poll__votes"
+        aria-label={`This poll has ${votes} votes. ${winnerStatus}`}
+      >
+        {votes} votes
+      </p>
     </PollWrapper>
   );
 }
