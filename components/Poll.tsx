@@ -9,7 +9,7 @@ type Props = {
 
 const PollWrapper = styled.form`
   inline-size: min(80%, 300px);
-  padding: 1.2rem;
+  padding: 1.6rem;
   background-color: #ffffff;
   border-radius: 8px;
   margin: 3rem auto;

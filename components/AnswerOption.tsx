@@ -23,7 +23,7 @@ const StyledAnswer = styled.button<StyledProps>`
   justify-content: space-between;
   align-items: center;
   inline-size: 100%;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: ${(props) =>
     props.isPollClosed && props.isWinner ? 'bold' : 'normal'};
   padding: 0.6rem 0.6rem;

@@ -5,6 +5,9 @@ import GlobalStyles from '../components/GlobalStyles';
 import questions from '../questions.json';
 import PollPlaceholder from '../components/PollPlaceholder';
 
+// Server side rendering the poll component results in a mismatch with what
+// the client renders since we're basically generating a random question 
+// twice, we use a dynamic import here to avoid this issue
 const DynamicPoll = dynamic(() => import('../components/Poll'), {
   ssr: false,
   loading: () => <PollPlaceholder />,
