@@ -118,7 +118,7 @@ const AnswerOption = ({
     <StyledAnswer
       type="button"
       isPollClosed={Boolean(selection)}
-      isWinner={winner.text === answer.text}
+      isWinner={winner.text === answer.text || winner.votes === votes}
       votePercentage={votePercentage}
       onClick={handleClick}
       aria-label={getResultLabel(

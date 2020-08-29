@@ -65,6 +65,26 @@ const getRandomQuestion = (questions: QandA[]) => {
   return questions[randomIndex];
 };
 
+/**
+ * Generates an accessible label for the poll results considering wether there's a tie
+ * and wether the user voted for the winning choice
+ * @param isTie
+ * @param isWinner
+ * @param winner
+ */
+const getPollResultLabel = (
+  isTie: boolean,
+  isWinner: boolean,
+  winner: Answer
+) => {
+  if (isTie)
+    return `Your answer and ${winner.text} are tied with ${winner.votes} each`;
+
+  return isWinner
+    ? 'Your answer is ahead on the poll!'
+    : `${winner.text} is winning the poll with ${winner.votes} votes`;
+};
+
 export default function Poll({ qandas }: Props) {
   const [question] = useState<QandA>(() => getRandomQuestion(qandas.questions));
   const [selection, setSelection] = useState<string>();
@@ -74,21 +94,19 @@ export default function Poll({ qandas }: Props) {
   const [winner, setWinner] = useState<Answer>(() =>
     getMostPopularAnswer(question.answers)
   );
-  const [winnerStatus, setWinnerStatus] = useState<string>('');
+  const [resultLabel, setResultLabel] = useState<string>('');
 
   const selectAnswer = (answer: Answer) => {
     const updatedVotes = votes + 1;
-    const selectedWinner = answer.votes + 1 > winner.votes;
+    const isTie = answer.votes + 1 === winner.votes;
+    const isWinner = answer.votes + 1 > winner.votes;
 
     setSelection(answer.text);
     setVotes(updatedVotes);
-    setWinnerStatus(
-      selectedWinner
-        ? 'Your answer is ahead on the poll!'
-        : `${winner.text} is winning the poll with ${winner.votes} votes`
-    );
 
-    if (!selectedWinner) return;
+    setResultLabel(getPollResultLabel(isTie, isWinner, winner));
+
+    if (!isWinner) return;
 
     setWinner(answer);
   };
@@ -112,7 +130,7 @@ export default function Poll({ qandas }: Props) {
 
       <p
         className="poll__votes"
-        aria-label={`This poll has ${votes} votes. ${winnerStatus}`}
+        aria-label={`This poll has ${votes} votes. ${resultLabel}`}
       >
         {votes} votes
       </p>
