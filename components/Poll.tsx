@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 import { QandAsDocument, QandA, Answer } from '../types';
 import AnswerOption from './AnswerOption';
@@ -65,63 +65,45 @@ const getRandomQuestion = (questions: QandA[]) => {
   return questions[randomIndex];
 };
 
-/**
- * Generates an accessible label for the poll results considering wether there's a tie
- * and wether the user voted for the winning choice
- * @param isTie
- * @param isWinner
- * @param winner
- */
-const getPollResultLabel = (
-  isTie: boolean,
-  isWinner: boolean,
-  winner: Answer
-) => {
-  if (isTie)
-    return `Your answer and ${winner.text} are tied with ${winner.votes} each`;
-
-  return isWinner
-    ? 'Your answer is ahead on the poll!'
-    : `${winner.text} is winning the poll with ${winner.votes} votes`;
-};
-
 export default function Poll({ qandas }: Props) {
-  const [question] = useState<QandA>(() => getRandomQuestion(qandas.questions));
-  const [selection, setSelection] = useState<string>();
+  const question = useRef<QandA>(getRandomQuestion(qandas.questions));
+  const [answers, setAnswers] = useState<Answer[]>(question.current.answers);
   const [votes, setVotes] = useState<number>(() =>
-    getTotalVotes(question.answers)
+    getTotalVotes(answers)
   );
-  const [winner, setWinner] = useState<Answer>(() =>
-    getMostPopularAnswer(question.answers)
-  );
+  const [selection, setSelection] = useState<Answer>();
+  const [winner, setWinner] = useState<Answer>();
   const [resultLabel, setResultLabel] = useState<string>('');
 
   const selectAnswer = (answer: Answer) => {
-    const updatedVotes = votes + 1;
-    const isTie = answer.votes + 1 === winner.votes;
-    const isWinner = answer.votes + 1 > winner.votes;
+    const updatedAnswer = { ... answer, votes: answer.votes + 1};
+    const updatedAnswers: Answer[] = answers.map(a =>  a.text === updatedAnswer.text ? updatedAnswer : a);
+    const updatedWinner = getMostPopularAnswer(updatedAnswers);
+    const updatedVotes = getTotalVotes(updatedAnswers);
 
-    setSelection(answer.text);
+    const isWinner = updatedAnswer.text === updatedWinner.text;
+    const isTie = !isWinner && updatedAnswer.votes === updatedWinner.votes;
+    const updatedResultLabel = isTie ? `Your answer and ${updatedWinner.text} is tied with ${updatedWinner.votes} each` : ``;
+
+    setAnswers(updatedAnswers);
+    setSelection(updatedAnswer);
+    setWinner(updatedWinner);
     setVotes(updatedVotes);
-
-    setResultLabel(getPollResultLabel(isTie, isWinner, winner));
-
-    if (!isWinner) return;
-
-    setWinner(answer);
+    setResultLabel(updatedResultLabel);
   };
 
   return (
     <PollWrapper>
-      <h1>{question.question.text}</h1>
+      <h1>{question.current.question.text}</h1>
 
       <div className="poll__options">
-        {question.answers.map((answer) => (
+        {answers.map((answer) => (
           <AnswerOption
             answer={answer}
-            selection={selection}
+            showResults={Boolean(winner)}
+            isSelected={selection && selection.text === answer.text || false}
+            isWinner={winner && (answer.text === winner.text || answer.votes === winner.votes) || false}
             totalVotes={votes}
-            winner={winner}
             onClick={selectAnswer}
             key={answer.text}
           />

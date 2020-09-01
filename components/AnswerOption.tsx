@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { Answer } from '../types';
 
 type Props = {
   answer: Answer;
-  selection?: string;
+  showResults: boolean;
+  isSelected: boolean;
+  isWinner: boolean;
   totalVotes: number;
-  winner: Answer;
   onClick: (answer: Answer) => void;
 };
 
@@ -78,65 +79,40 @@ const StyledAnswer = styled.button<StyledProps>`
 const getCalculatedPercentage = (totalVotes: number, votes: number) =>
   Number(((votes * 100) / totalVotes).toFixed(0));
 
-/**
- * Generates an accessible label for the poll option considering two states:
- *  1. User hasn't voted: Button is described by the text content
- *  2. User has voted: Buttons are described by the poll results
- * @param selection
- * @param text
- * @param votes
- * @param percentage
- */
-const getResultLabel = (
-  selection: string = '',
-  text: string,
-  votes: number,
-  percentage: number
-) => {
-  if (!selection) return `Select ${text}`;
-
-  return `${text} has been voted by ${percentage} percent of ${votes} total votes.`;
-};
 const AnswerOption = ({
   answer,
-  selection,
+  showResults,
+  isSelected,
   totalVotes,
-  winner,
+  isWinner,
   onClick,
 }: Props) => {
-  const [votes, setVotes] = useState<number>(answer.votes);
 
   const handleClick = () => {
-    if (selection) return; // Lock selection if we already voted
+    if (showResults) return; // Lock selection if we already voted
     onClick(answer);
-    setVotes(votes + 1);
   };
 
-  const votePercentage = getCalculatedPercentage(totalVotes, votes);
+  const votePercentage = getCalculatedPercentage(totalVotes, answer.votes);
 
   return (
     <StyledAnswer
       type="button"
-      isPollClosed={Boolean(selection)}
-      isWinner={winner.text === answer.text || winner.votes === votes}
+      isPollClosed={showResults}
+      isWinner={isWinner}
       votePercentage={votePercentage}
       onClick={handleClick}
-      aria-label={getResultLabel(
-        selection,
-        answer.text.slice(2),
-        totalVotes,
-        votePercentage
-      )}
+      aria-label={showResults ? `Select ${answer.text}` : `${answer.text} has been voted by ${votePercentage} percent of ${totalVotes} total votes.`}
     >
       <span className="answer__content">
         {answer.text}
 
-        {selection && selection === answer.text ? (
+        {showResults && isSelected ? (
           <img src={require('../static/check-circle.svg')} alt="" />
         ) : null}
       </span>
 
-      {selection ? (
+      {showResults ? (
         <span className="answer__percentage">{votePercentage}%</span>
       ) : null}
     </StyledAnswer>
